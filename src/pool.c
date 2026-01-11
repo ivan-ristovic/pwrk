@@ -2,13 +2,13 @@
 #include "req.h"
 #include <unistd.h>
 
-void pool_exec(const Options *opts)
+void pool_exec(const char *url)
 {
     req_init_global();
     
     for (int i = 0; i < 5; i++) {
-        req_get(opts->url);
-        req_post(opts->url, "abc", 3);
+        req_get(url);
+        req_post(url, "abc", 3);
         sleep(1);
     }
 

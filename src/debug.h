@@ -12,13 +12,13 @@ extern bool DEBUG;
 
 #define dbg(fmt, ...) \
     do { \
-        if (DEBUG) fprintf(stderr, "%s:%4d:%s(): " fmt "\n", \
+        if (DEBUG) fprintf(stderr, "%s:%d:%s(): " fmt "\n", \
                            __FILE__, __LINE__, __func__, ##__VA_ARGS__); \
     } while (0)
 
 #define panic_if(cond, fmt, ...) \
     do { \
-        if (cond) error(EXIT_FAILURE, errno, "%s:%4d:%s(): " fmt "\n", \
+        if (cond) error(EXIT_FAILURE, errno, "%s:%d:%s(): " fmt "\n", \
                         __FILE__, __LINE__, __func__, ##__VA_ARGS__); \
     } while (0)
 
