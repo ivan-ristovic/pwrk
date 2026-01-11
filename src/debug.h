@@ -24,4 +24,6 @@ extern bool DEBUG;
 
 #define panic(...) panic_if(1, __VA_ARGS__)
 
+#define unused(a) (void)(a)
+
 #endif

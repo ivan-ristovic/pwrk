@@ -17,7 +17,7 @@ void req_cleanup_global()
     curl_global_cleanup();
 }
 
-static bool _req_init_local()
+static bool req_init_local()
 {
     dbg("Initializing curl locally");
     _curl = curl_easy_init();
@@ -25,49 +25,63 @@ static bool _req_init_local()
     return _curl != NULL;
 }
 
-static void _req_cleanup_local()
+static void req_cleanup_local()
 {
     panic_if(_curl == NULL, "Local curl cleanup called before init");
     dbg("Cleaning up curl locally");
     curl_easy_cleanup(_curl);
 }
 
-static void _req_error(CURLcode result)
+static void req_error(CURLcode result)
 {
     fprintf(stderr, "curl_easy_perform() failed: %s\n",
             curl_easy_strerror(result));
 }
 
+static size_t cb(void *data, size_t size, size_t nmemb, void *userp) {
+    unused(data);
+    unused(size);
+    unused(userp);
+    dbg("libcurl: %zu bytes received", nmemb);
+    return nmemb;
+}
+
 void req_get(const char *url)
 {
-    if (_req_init_local()) {
+    if (req_init_local()) {
         curl_easy_setopt(_curl, CURLOPT_URL, url);
         // curl_easy_setopt(_curl, CURLOPT_FOLLOWLOCATION, 1L);
+        
+        curl_easy_setopt(_curl, CURLOPT_WRITEFUNCTION, cb);
+        /* curl_easy_setopt(_curl, CURLOPT_WRITEDATA, (void *)&data); */
 
         dbg("GET : %s", url);
         CURLcode result = curl_easy_perform(_curl);
         if (result != CURLE_OK) {
-            _req_error(result);
+            req_error(result);
         }
 
-        _req_cleanup_local();
+        req_cleanup_local();
     }
 }
 
 void req_post(const char *url, const char *data, ssize_t len)
 {
-    if (_req_init_local()) {
+    if (req_init_local()) {
         curl_easy_setopt(_curl, CURLOPT_URL, url);
         curl_easy_setopt(_curl, CURLOPT_POSTFIELDS, data);
         curl_easy_setopt(_curl, CURLOPT_POSTFIELDSIZE, len);
 
+        curl_easy_setopt(_curl, CURLOPT_WRITEFUNCTION, cb);
+        /* curl_easy_setopt(_curl, CURLOPT_WRITEDATA, (void *)&data); */
+
         dbg("POST: %s", url);
         CURLcode result = curl_easy_perform(_curl);
         if (result != CURLE_OK) {
-            _req_error(result);
+            req_error(result);
         }
 
-        _req_cleanup_local();
+        req_cleanup_local();
     }
 }
 

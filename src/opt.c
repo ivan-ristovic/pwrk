@@ -1,4 +1,5 @@
 #include "opt.h"
+#include "debug.h"
 
 const unsigned MODE_ALL = 1;
 const unsigned MODE_WHEN = 1 << 1;
@@ -60,6 +61,6 @@ Options* parse_args(int argc, char **argv)
 
 void validate(Options *opts)
 {
-    (void) opts;    
+    unused(opts);
 }
 
