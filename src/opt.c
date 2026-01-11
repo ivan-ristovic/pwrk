@@ -1,4 +1,3 @@
-#include "debug.h"
 #include "opt.h"
 
 const unsigned MODE_ALL = 1;
