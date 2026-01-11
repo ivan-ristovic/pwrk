@@ -22,6 +22,10 @@ static void process_batch(const char *base_url, const Batch *batch)
 
 void pool_exec(const char *url, const Config *cfg)
 {
+    if (cfg == NULL) {
+        // TODO
+    }
+
     req_init_global();
     
     int i = 0;
