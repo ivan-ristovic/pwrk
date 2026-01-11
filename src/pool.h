@@ -1,6 +1,8 @@
 #ifndef _POOL_H_
 #define _POOL_H_
 
-void pool_exec(const char *url);
+#include "config.h"
+
+void pool_exec(const char *url, const Config *cfg);
 
 #endif

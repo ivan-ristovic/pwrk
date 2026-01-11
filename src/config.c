@@ -7,12 +7,11 @@
 
 static Batch* parse_batch(char *line, const char *delim)
 {
-    const char* tok;
+    char* tok;
     
     tok = strtok(line, delim);
     if (tok == NULL || *tok == '\0')
         return NULL;
-
     unsigned requests = atoi(tok);
     if (requests == 0)
         return NULL;
@@ -20,7 +19,6 @@ static Batch* parse_batch(char *line, const char *delim)
     tok = strtok(NULL, delim);
     if (tok == NULL || *tok == '\0')
         return NULL;
-
     size_t alloc = atoi(tok);
     if (alloc == 0)
         return NULL;
@@ -28,15 +26,21 @@ static Batch* parse_batch(char *line, const char *delim)
     tok = strtok(NULL, delim);
     if (tok == NULL || *tok == '\0')
         return NULL;
-
     uint64_t delay_us = atoll(tok);
     if (delay_us == 0)
         return NULL;
+
+    tok = strtok(NULL, delim);
+    if (tok == NULL || *tok == '\0')
+        return NULL;
+    char *endpoint = strdup(tok);
+    panic_if(endpoint == NULL, "strdup() failed");
 
     Batch *b = malloc(sizeof(*b));
     b->requests = requests;
     b->alloc = alloc;
     b->delay_us = delay_us;
+    b->endpoint = endpoint;
     b->next = NULL;
     return b;
 }
@@ -88,6 +92,7 @@ void free_config(Config *cfg)
         while (curr != NULL) {
             prev = curr;
             curr = curr->next;
+            free(prev->endpoint);
             free(prev);
         }
         free(cfg);

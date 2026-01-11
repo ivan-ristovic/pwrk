@@ -70,3 +70,7 @@ void req_post(const char *url, const char *data, ssize_t len)
         _req_cleanup_local();
     }
 }
+
+// TODO async get/post with timeout 
+// https://curl.se/libcurl/c/multi-post.html
+// this is needed in order to counter coordinated ommission!
