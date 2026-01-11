@@ -1,6 +1,6 @@
 #include "debug.h"
 #include "opt.h"
-#include "req.h"
+#include "pool.h"
 
 int main(int argc, char *argv[])
 {
@@ -11,12 +11,7 @@ int main(int argc, char *argv[])
     dbg("URL: %s", opts->url);
     dbg("Config path: %s\n", opts->cfg_path);
 
-    req_init_global();
-    
-    req_get(opts->url);
-    req_post(opts->url, "abc", 3);
-
-    req_cleanup_global();
+    pool_exec(opts);
 
     return 0;
 }
