@@ -1,5 +1,5 @@
-#ifndef _GFLOW_OPT_H_
-#define _GFLOW_OPT_H_
+#ifndef _OPT_H_
+#define _OPT_H_
 
 #include <argp.h>
 #include <argz.h>

@@ -1,5 +1,5 @@
-#ifndef _GFLOW_DEBUG_H_
-#define _GFLOW_DEBUG_H_
+#ifndef _DEBUG_H_
+#define _DEBUG_H_
 
 #include <assert.h>
 #include <error.h>
