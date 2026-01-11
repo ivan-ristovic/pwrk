@@ -13,6 +13,7 @@ extern const unsigned MODE_UNTIL;
 
 typedef struct {
     bool verbose;
+    char* url;
     char* cfg_path;
 } Options;
 

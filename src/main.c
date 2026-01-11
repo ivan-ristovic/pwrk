@@ -8,11 +8,12 @@ int main(int argc, char *argv[])
     DEBUG = opts->verbose;
     validate(opts);
 
+    dbg("URL: %s", opts->url);
     dbg("Config path: %s\n", opts->cfg_path);
 
     req_init();
     
-    req_get("http://localhost:8000");
+    req_get(opts->url);
 
     req_cleanup();
 
