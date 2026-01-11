@@ -1,6 +1,6 @@
 # tool macros
 CC ?= c99
-CFLAGS := -Wall -Wextra
+CFLAGS := -Wall -Wextra -lcurl
 DBGFLAGS := -g -O0
 COBJFLAGS := $(CFLAGS) -c
 

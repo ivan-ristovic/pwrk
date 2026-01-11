@@ -1,5 +1,6 @@
 #include "debug.h"
 #include "opt.h"
+#include "req.h"
 
 int main(int argc, char *argv[])
 {
@@ -7,7 +8,13 @@ int main(int argc, char *argv[])
     DEBUG = opts->verbose;
     validate(opts);
 
-    printf("Config: %s\n", opts->cfg_path);
+    dbg("Config path: %s\n", opts->cfg_path);
+
+    req_init();
+    
+    req_get("http://localhost:8000");
+
+    req_cleanup();
 
     return 0;
 }
