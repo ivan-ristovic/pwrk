@@ -104,6 +104,8 @@ Config* read_config(const char *path)
         free(tmp);
     }
 
+    fclose(f);
+
     return cfg;
 }
 
