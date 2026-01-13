@@ -27,6 +27,8 @@ int main(int argc, char *argv[])
     dbg("URL: %s", opts->url);
     pool_exec(opts->url, cfg);
 
+    // TODO print measurements
+
     free_config(cfg);
     return 0;
 }

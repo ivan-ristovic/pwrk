@@ -65,7 +65,11 @@ static Batch* parse_batch(char *line, const char *delim)
     b->delay_us = delay_us;
     b->type = type;
     b->endpoint = endpoint;
+    b->measurements = calloc(requests, sizeof(*(b->measurements)));
     b->next = NULL;
+
+    panic_if(b->measurements == NULL, "calloc() failed");
+
     return b;
 }
 

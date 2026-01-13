@@ -1,6 +1,9 @@
-#include "req.h"
 #include "debug.h"
+#include "req.h"
+#include "stopwatch.h"
 #include <stdbool.h>
+
+// TODO reuse curl handle?
 
 CURL *_curl = NULL;
 
@@ -46,7 +49,7 @@ static size_t cb(void *data, size_t size, size_t nmemb, void *userp) {
     return nmemb;
 }
 
-void req_get(const char *url)
+int req_get(const char *url, Measurement *measurement)
 {
     if (req_init_local()) {
         curl_easy_setopt(_curl, CURLOPT_URL, url);
@@ -56,16 +59,25 @@ void req_get(const char *url)
         /* curl_easy_setopt(_curl, CURLOPT_WRITEDATA, (void *)&data); */
 
         dbg("GET : %s", url);
-        CURLcode result = curl_easy_perform(_curl);
+        CURLcode result;
+        uint64_t latency;
+
+        STOPWATCH_MEASURE(&latency, { result = curl_easy_perform(_curl); });
+        measurement->latency_ns = latency;
+
         if (result != CURLE_OK) {
             req_error(result);
         }
 
         req_cleanup_local();
+
+        return (int)result;
     }
+
+    return -1;
 }
 
-void req_post(const char *url, const char *data, ssize_t len)
+int req_post(const char *url, const char *data, size_t len, Measurement *measurement)
 {
     if (req_init_local()) {
         curl_easy_setopt(_curl, CURLOPT_URL, url);
@@ -76,13 +88,22 @@ void req_post(const char *url, const char *data, ssize_t len)
         /* curl_easy_setopt(_curl, CURLOPT_WRITEDATA, (void *)&data); */
 
         dbg("POST: %s", url);
-        CURLcode result = curl_easy_perform(_curl);
+        CURLcode result;
+        uint64_t latency;
+
+        STOPWATCH_MEASURE(&latency, { result = curl_easy_perform(_curl); });
+        measurement->latency_ns = latency;
+
         if (result != CURLE_OK) {
             req_error(result);
         }
 
         req_cleanup_local();
+
+        return (int)result;
     }
+
+    return -1;
 }
 
 // TODO async get/post with timeout 

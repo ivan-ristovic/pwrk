@@ -1,22 +1,32 @@
+#include "debug.h"
 #include "pool.h"
 #include "req.h"
+#include <time.h>
 #include <unistd.h>
 
-static void process_batch(const char *base_url, const Batch *batch) 
+static void process_batch(const char *base_url, Batch *batch) 
 {
     // TODO create final URL
     const char *url = base_url;
 
+    time_t delay_s = batch->delay_us / 1000000UL;
+    time_t delay_ns = (batch->delay_us % 1000000UL) * 1000UL;
     for (unsigned i = 0; i < batch->requests; i++) {
+        int code = 0;
         switch (batch->type) {
             case REQUEST_TYPE_GET:
-                req_get(url);               // TODO
+                code = req_get(url, &batch->measurements[i]);
                 break;
             case REQUEST_TYPE_POST:
-                req_post(url, "abc", 3);    // TODO
+                // TODO
+                code = req_post(url, "abc", 3, &batch->measurements[i]);
                 break;
         }
-        usleep(batch->delay_us);
+
+        // TODO check code
+
+        struct timespec dt = { delay_s, delay_ns };
+        nanosleep(&dt, &dt);
     }
 }
 
@@ -24,11 +34,12 @@ void pool_exec(const char *url, const Config *cfg)
 {
     if (cfg == NULL) {
         // TODO
+        panic("not implemented");
     }
 
     req_init_global();
     
-    int i = 0;
+    int i = 1;
     for (Batch *curr = cfg->batches; curr != NULL; curr = curr->next) {
         printf("[%2d/%2d] %4u req, %10zu bytes, %10ld delay (us), ep: %s\n",
                 i, cfg->count, curr->requests, curr->alloc, curr->delay_us, curr->endpoint);

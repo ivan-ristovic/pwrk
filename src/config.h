@@ -3,6 +3,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include "measure.h"
 
 typedef struct Config {
     const char* path;
@@ -21,6 +22,7 @@ typedef struct Batch {
     size_t alloc;
     uint64_t delay_us;
     char *endpoint;
+    struct Measurement *measurements;
     struct Batch *next;
 } Batch;
 
