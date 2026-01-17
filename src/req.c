@@ -51,6 +51,8 @@ static size_t cb(void *data, size_t size, size_t nmemb, void *userp) {
 
 int req_get(const char *url, Measurement *measurement)
 {
+    int status = -1;
+
     if (req_init_local()) {
         curl_easy_setopt(_curl, CURLOPT_URL, url);
         // curl_easy_setopt(_curl, CURLOPT_FOLLOWLOCATION, 1L);
@@ -65,20 +67,22 @@ int req_get(const char *url, Measurement *measurement)
         STOPWATCH_MEASURE(&latency, { result = curl_easy_perform(_curl); });
         measurement->latency_ns = latency;
 
-        if (result != CURLE_OK) {
+        if (result == CURLE_OK) {
+            curl_easy_getinfo(_curl, CURLINFO_RESPONSE_CODE, &status);
+        } else {
             req_error(result);
         }
 
         req_cleanup_local();
-
-        return (int)result;
     }
 
-    return -1;
+    return status;
 }
 
 int req_post(const char *url, const char *data, size_t len, Measurement *measurement)
 {
+    int status = -1;
+
     if (req_init_local()) {
         curl_easy_setopt(_curl, CURLOPT_URL, url);
         curl_easy_setopt(_curl, CURLOPT_POSTFIELDS, data);
@@ -94,16 +98,16 @@ int req_post(const char *url, const char *data, size_t len, Measurement *measure
         STOPWATCH_MEASURE(&latency, { result = curl_easy_perform(_curl); });
         measurement->latency_ns = latency;
 
-        if (result != CURLE_OK) {
+        if (result == CURLE_OK) {
+            curl_easy_getinfo(_curl, CURLINFO_RESPONSE_CODE, &status);
+        } else {
             req_error(result);
         }
 
         req_cleanup_local();
-
-        return (int)result;
     }
 
-    return -1;
+    return status;
 }
 
 // TODO async get/post with timeout 

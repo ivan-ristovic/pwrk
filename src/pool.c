@@ -32,7 +32,7 @@ static void process_batch(const char *base_url, Batch *batch)
                 break;
         }
 
-        // TODO check code
+        batch->measurements[i].status = code;
 
         struct timespec dt = { delay_s, delay_ns };
         nanosleep(&dt, &dt);
@@ -48,7 +48,7 @@ void pool_exec(const char *url, const Config *cfg)
     
     int i = 1;
     for (Batch *curr = cfg->batches; curr != NULL; curr = curr->next) {
-        printf("[%2d/%2d] %4u req, %10zu bytes, %10ldus delay, %s %s\n",
+        printf("[%2d/%2d] %4u req, %10zu bytes, %10ldus delay, %4s %s\n",
                 i, cfg->count, curr->requests, curr->alloc, curr->delay_us, req_type_to_str(curr->type), curr->endpoint);
         process_batch(url, curr);
         i++;

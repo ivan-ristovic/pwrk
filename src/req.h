@@ -2,7 +2,7 @@
 #define _REQ_H_
 
 #include <curl/curl.h>
-#include "measure.h"
+#include "config.h"
 
 extern CURL *curl;
 

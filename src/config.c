@@ -1,5 +1,6 @@
 #include "config.h"
 #include "debug.h"
+#include <errno.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -25,8 +26,9 @@ static Batch* parse_batch(char *line, const char *delim)
     tok = strtok(line, delim);
     if (tok == NULL || *tok == '\0')
         return NULL;
-    unsigned requests = atoi(tok);
-    if (requests == 0)
+    int errno_old = errno;
+    uint64_t requests = strtoull(tok, NULL, 10);
+    if (requests == 0 || (errno != errno_old && (errno == EINVAL || errno == ERANGE)))
         return NULL;
     
     // 2: alloc size for each request
@@ -50,9 +52,9 @@ static Batch* parse_batch(char *line, const char *delim)
     if (tok == NULL || *tok == '\0')
         return NULL;
     RequestType type;
-    if (strncmp(tok, REQ_TYPE_GET, REQ_TYPE_GET_SIZE)) {
+    if (strncmp(tok, REQ_TYPE_GET, REQ_TYPE_GET_SIZE) == 0) {
         type = REQUEST_TYPE_GET;
-    } else if (strncmp(tok, REQ_TYPE_POST, REQ_TYPE_POST_SIZE)) {
+    } else if (strncmp(tok, REQ_TYPE_POST, REQ_TYPE_POST_SIZE) == 0) {
         type = REQUEST_TYPE_POST;
     } else {
         return NULL;
@@ -164,4 +166,33 @@ const char *req_type_to_str(RequestType t)
             panic("Unknown request type");
     }
     return NULL;
+}
+
+void print_results(const Config *cfg)
+{
+    printf("\n--- Results ---\n");
+
+    uint64_t total_success = 0;
+    uint64_t total_failed = 0;
+    unsigned int batch_id = 1;
+    uint64_t min = 0;
+    uint64_t max = 0;
+    for (Batch *curr = cfg->batches; curr != NULL; curr = curr->next) {
+        uint64_t failed = 0;
+        for (uint64_t i = 0; i < curr->requests; i++) {
+            if (curr->measurements[i].status == 200) {
+                uint64_t v = curr->measurements[i].latency_ns;
+                if (min == 0 || v < min) min = v;
+                if (max == 0 || v > max) max = v;
+            } else {
+                failed++;
+            }
+        }
+        total_success += curr->requests - failed;
+        total_failed += failed;
+        batch_id++;
+    }
+    printf("Valid samples: %zu out of %zu (%zu errored)\n", 
+           total_success, total_success + total_failed, total_failed);
+    printf("min: %zuns\nmax: %zuns\n", min, max);
 }

@@ -3,7 +3,6 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include "measure.h"
 
 typedef struct Config {
     const char* path;
@@ -26,9 +25,15 @@ typedef struct Batch {
     struct Batch *next;
 } Batch;
 
+typedef struct Measurement {
+    uint64_t latency_ns;
+    int status;
+} Measurement;
+
 Config* get_default_config();
 Config* read_config(const char *path);
 void free_config(Config *cfg);
 const char *req_type_to_str(RequestType t);
+void print_results(const Config *cfg);
 
 #endif
