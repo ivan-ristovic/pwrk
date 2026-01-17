@@ -32,11 +32,6 @@ static void process_batch(const char *base_url, Batch *batch)
 
 void pool_exec(const char *url, const Config *cfg)
 {
-    if (cfg == NULL) {
-        // TODO
-        panic("not implemented");
-    }
-
     req_init_global();
     
     int i = 1;

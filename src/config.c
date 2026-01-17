@@ -10,6 +10,13 @@ static const int REQ_TYPE_GET_SIZE = 3;
 static const char *REQ_TYPE_POST = "POST";
 static const int REQ_TYPE_POST_SIZE = 4;
 
+static void *heap_alloc(size_t nbytes)
+{
+    void *mem = malloc(nbytes);
+    panic_if(mem == NULL, "malloc() failed");
+    return mem;
+}
+
 static Batch* parse_batch(char *line, const char *delim)
 {
     char* tok;
@@ -59,7 +66,7 @@ static Batch* parse_batch(char *line, const char *delim)
     panic_if(endpoint == NULL, "strdup() failed");
 
     // Create batch object
-    Batch *b = malloc(sizeof(*b));
+    Batch *b = heap_alloc(sizeof(*b));
     b->requests = requests;
     b->alloc = alloc;
     b->delay_us = delay_us;
@@ -80,8 +87,7 @@ Config* read_config(const char *path)
     panic_if(f == NULL, "fopen() failed");
 
     dbg("Allocating config");
-    Config *cfg = malloc(sizeof(*cfg));
-    panic_if(cfg == NULL, "malloc() failed");
+    Config *cfg = heap_alloc(sizeof(*cfg));
     cfg->path = path;
     cfg->count = 0;
     cfg->batches = NULL;
@@ -109,6 +115,26 @@ Config* read_config(const char *path)
     }
 
     fclose(f);
+
+    return cfg;
+}
+
+Config* get_default_config()
+{
+    Batch *b = heap_alloc(sizeof(*b));
+    b->alloc = 1024;
+    b->delay_us = 1000000;
+    b->endpoint = "/";
+    b->requests = 1000;
+    b->measurements = calloc(b->requests, sizeof(*(b->measurements)));
+    b->next = NULL;
+    b->type = REQUEST_TYPE_GET;
+    panic_if(b->measurements == NULL, "calloc() failed");
+
+    Config *cfg = heap_alloc(sizeof(*cfg));
+    cfg->batches = b;
+    cfg->count = 1;
+    cfg->path = NULL;
 
     return cfg;
 }

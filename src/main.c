@@ -22,6 +22,8 @@ int main(int argc, char *argv[])
             i++;
         }
         panic_if(cfg->count != i, "Batch count mismatch");
+    } else {
+        cfg = get_default_config();
     }
 
     dbg("URL: %s", opts->url);

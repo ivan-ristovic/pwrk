@@ -26,6 +26,7 @@ typedef struct Batch {
     struct Batch *next;
 } Batch;
 
+Config* get_default_config();
 Config* read_config(const char *path);
 void free_config(Config *cfg);
 const char *req_type_to_str(RequestType t);
