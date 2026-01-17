@@ -36,8 +36,8 @@ void pool_exec(const char *url, const Config *cfg)
     
     int i = 1;
     for (Batch *curr = cfg->batches; curr != NULL; curr = curr->next) {
-        printf("[%2d/%2d] %4u req, %10zu bytes, %10ld delay (us), ep: %s\n",
-                i, cfg->count, curr->requests, curr->alloc, curr->delay_us, curr->endpoint);
+        printf("[%2d/%2d] %4u req, %10zu bytes, %10ldus delay, %s %s\n",
+                i, cfg->count, curr->requests, curr->alloc, curr->delay_us, req_type_to_str(curr->type), curr->endpoint);
         process_batch(url, curr);
         i++;
     }
