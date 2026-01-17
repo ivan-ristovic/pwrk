@@ -1,14 +1,23 @@
 #include "debug.h"
 #include "pool.h"
 #include "req.h"
+#include <string.h>
 #include <time.h>
 #include <unistd.h>
 
 static void process_batch(const char *base_url, Batch *batch) 
 {
-    // TODO create final URL
-    const char *url = base_url;
+    // Make final URL
+    const unsigned long base_url_size = strlen(base_url);
+    const unsigned long endpoint_size = strlen(batch->endpoint);
+    char *url = malloc(base_url_size + endpoint_size + 1);
+    panic_if(url == NULL, "malloc() failed");
+    memcpy(url, base_url, base_url_size);
+    memcpy(url + base_url_size, batch->endpoint, endpoint_size);
+    url[base_url_size + endpoint_size + 1] = '\0';
+    dbg("URL: %s", url);
 
+    // Run batch
     time_t delay_s = batch->delay_us / 1000000UL;
     time_t delay_ns = (batch->delay_us % 1000000UL) * 1000UL;
     for (unsigned i = 0; i < batch->requests; i++) {
@@ -28,6 +37,9 @@ static void process_batch(const char *base_url, Batch *batch)
         struct timespec dt = { delay_s, delay_ns };
         nanosleep(&dt, &dt);
     }
+
+    // Cleanup
+    free(url);
 }
 
 void pool_exec(const char *url, const Config *cfg)
