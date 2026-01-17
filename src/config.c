@@ -11,6 +11,8 @@ static const int REQ_TYPE_GET_SIZE = 3;
 static const char *REQ_TYPE_POST = "POST";
 static const int REQ_TYPE_POST_SIZE = 4;
 
+static void print_hist(uint64_t *values, size_t n, const char *prefix);
+
 static void *heap_alloc(size_t nbytes)
 {
     void *mem = malloc(nbytes);
@@ -168,31 +170,70 @@ const char *req_type_to_str(RequestType t)
     return NULL;
 }
 
+static int cmp(const void *v1, const void *v2) 
+{
+    uint64_t i1 = *((uint64_t *)v1);
+    uint64_t i2 = *((uint64_t *)v2);
+    return i1 - i2;    
+}
+
 void print_results(const Config *cfg)
 {
     printf("\n--- Results ---\n");
 
+    size_t total = 0;
+    for (Batch *curr = cfg->batches; curr != NULL; curr = curr->next) {
+        total += curr->requests;
+    }
+
+    uint64_t *latencies = malloc(total * sizeof(*latencies));
+    panic_if(latencies == NULL, "malloc() failed");
+
+    size_t n = 0;
+    unsigned int batch_id = 1;
     uint64_t total_success = 0;
     uint64_t total_failed = 0;
-    unsigned int batch_id = 1;
-    uint64_t min = 0;
-    uint64_t max = 0;
+    
     for (Batch *curr = cfg->batches; curr != NULL; curr = curr->next) {
         uint64_t failed = 0;
+        size_t begin = n;
         for (uint64_t i = 0; i < curr->requests; i++) {
             if (curr->measurements[i].status == 200) {
                 uint64_t v = curr->measurements[i].latency_ns;
-                if (min == 0 || v < min) min = v;
-                if (max == 0 || v > max) max = v;
+                latencies[n] = v;
+                n++;
             } else {
                 failed++;
             }
         }
+        size_t end = n;
+        size_t nb = end - begin;
+
+        qsort(latencies + begin, nb, sizeof(*latencies), &cmp);
+
+        char prefix[8];
+        snprintf(prefix, 8, "[%2u/%2u]", batch_id, cfg->count);
+
+        printf("%s samples: %zu out of %u (%zu errored)\n", 
+               prefix, nb, curr->requests, failed);
+
+        print_hist(latencies + begin, nb, prefix);
+
         total_success += curr->requests - failed;
         total_failed += failed;
         batch_id++;
     }
-    printf("Valid samples: %zu out of %zu (%zu errored)\n", 
+
+    printf("[total] samples: %zu out of %zu (%zu errored)\n", 
            total_success, total_success + total_failed, total_failed);
-    printf("min: %zuns\nmax: %zuns\n", min, max);
+
+    qsort(latencies, n, sizeof(*latencies), &cmp);
+    print_hist(latencies, n, "[total]");
+}
+
+static void print_hist(uint64_t *values, size_t n, const char *prefix)
+{
+    uint64_t min = values[0];
+    uint64_t max = values[n - 1];
+    printf("%s min: %zuns max: %zuns\n", prefix, min, max);
 }
