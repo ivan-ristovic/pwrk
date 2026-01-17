@@ -209,7 +209,9 @@ void print_results(const Config *cfg)
         printf("%s samples: %zu out of %u (%zu errored)\n", 
                prefix, nb, curr->requests, failed);
 
-        sort_and_print_hist(latencies + begin, nb, prefix);
+        if (nb > 0) {
+            sort_and_print_hist(latencies + begin, nb, prefix);
+        }
 
         total_success += curr->requests - failed;
         total_failed += failed;
@@ -219,7 +221,9 @@ void print_results(const Config *cfg)
     printf("[total] samples: %zu out of %zu (%zu errored)\n", 
            total_success, total_success + total_failed, total_failed);
 
-    sort_and_print_hist(latencies, n, "[total]");
+    if (total_success > 0) {
+        sort_and_print_hist(latencies, n, "[total]");
+    }
 
     free(latencies);
 }
