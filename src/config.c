@@ -1,6 +1,7 @@
 #include "config.h"
 #include "debug.h"
 #include <errno.h>
+#include <math.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -11,7 +12,7 @@ static const int REQ_TYPE_GET_SIZE = 3;
 static const char *REQ_TYPE_POST = "POST";
 static const int REQ_TYPE_POST_SIZE = 4;
 
-static void print_hist(uint64_t *values, size_t n, const char *prefix);
+static void sort_and_print_hist(uint64_t *values, size_t n, const char *prefix);
 
 static void *heap_alloc(size_t nbytes)
 {
@@ -170,13 +171,6 @@ const char *req_type_to_str(RequestType t)
     return NULL;
 }
 
-static int cmp(const void *v1, const void *v2) 
-{
-    uint64_t i1 = *((uint64_t *)v1);
-    uint64_t i2 = *((uint64_t *)v2);
-    return i1 - i2;    
-}
-
 void print_results(const Config *cfg)
 {
     printf("\n--- Results ---\n");
@@ -209,15 +203,13 @@ void print_results(const Config *cfg)
         size_t end = n;
         size_t nb = end - begin;
 
-        qsort(latencies + begin, nb, sizeof(*latencies), &cmp);
-
         char prefix[8];
         snprintf(prefix, 8, "[%2u/%2u]", batch_id, cfg->count);
 
         printf("%s samples: %zu out of %u (%zu errored)\n", 
                prefix, nb, curr->requests, failed);
 
-        print_hist(latencies + begin, nb, prefix);
+        sort_and_print_hist(latencies + begin, nb, prefix);
 
         total_success += curr->requests - failed;
         total_failed += failed;
@@ -227,13 +219,42 @@ void print_results(const Config *cfg)
     printf("[total] samples: %zu out of %zu (%zu errored)\n", 
            total_success, total_success + total_failed, total_failed);
 
-    qsort(latencies, n, sizeof(*latencies), &cmp);
-    print_hist(latencies, n, "[total]");
+    sort_and_print_hist(latencies, n, "[total]");
+
+    free(latencies);
 }
 
-static void print_hist(uint64_t *values, size_t n, const char *prefix)
+static int cmp(const void *v1, const void *v2) 
 {
+    uint64_t i1 = *((uint64_t *)v1);
+    uint64_t i2 = *((uint64_t *)v2);
+    return i1 - i2;    
+}
+
+static double percentile(const uint64_t *vs, size_t n, double p) {
+    if (p <= 0.0) return vs[0];
+    if (p >= 100.0) return vs[n - 1];
+
+    double r = (p / 100.0) * (n - 1);
+    uint64_t lo = (uint64_t)floor(r);
+    uint64_t hi = (uint64_t)ceil(r);
+
+    double frac = r - lo;
+    return vs[lo] + frac * (vs[hi] - vs[lo]);
+}
+
+static void sort_and_print_hist(uint64_t *values, size_t n, const char *prefix)
+{
+    qsort(values, n, sizeof(*values), &cmp);
+
     uint64_t min = values[0];
     uint64_t max = values[n - 1];
     printf("%s min: %zuns max: %zuns\n", prefix, min, max);
+
+    double ps[] = { 25.0, 50.0, 75.0, 90.0, 99.9, 99.99, 99.999 };
+    int nps = sizeof(ps) / sizeof(ps[0]);
+    for (int i = 0; i < nps; i++) {
+        double p = ps[i];
+        printf("%s p%2.3f: %.1f\n", prefix, p, percentile(values, n, p));
+    }
 }
