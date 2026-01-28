@@ -19,7 +19,7 @@ typedef struct Batch {
     unsigned requests;
     RequestType type;
     size_t alloc;
-    uint64_t delay_us;
+    uint64_t delay_ns;
     char *endpoint;
     struct Measurement *measurements;
     struct Batch *next;

@@ -3,4 +3,4 @@
 make
 ./bin/pwrk -v \
     http://localhost:8000 \
-    -c $PWD/configs/sample.wrk
+    -c $PWD/configs/regular.wrk

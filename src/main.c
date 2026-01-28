@@ -17,7 +17,7 @@ int main(int argc, char *argv[])
         unsigned i = 0;
         for (Batch *b = cfg->batches; b != NULL; b = b->next) {
             dbg("%2d: %3u req, %10zu bytes, %10ld delay (us), type: %4s, endpoint: %s",
-                i, b->requests, b->alloc, b->delay_us, 
+                i, b->requests, b->alloc, b->delay_ns, 
                 req_type_to_str(b->type), b->endpoint);
             i++;
         }

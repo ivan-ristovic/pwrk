@@ -74,7 +74,7 @@ static Batch* parse_batch(char *line, const char *delim)
     Batch *b = heap_alloc(sizeof(*b));
     b->requests = requests;
     b->alloc = alloc;
-    b->delay_us = delay_us;
+    b->delay_ns = delay_us * 1000;
     b->type = type;
     b->endpoint = endpoint;
     b->measurements = calloc(requests, sizeof(*(b->measurements)));
@@ -128,7 +128,7 @@ Config* get_default_config()
 {
     Batch *b = heap_alloc(sizeof(*b));
     b->alloc = 1024;
-    b->delay_us = 1000000;
+    b->delay_ns = 1000000000;
     b->endpoint = "/";
     b->requests = 1000;
     b->measurements = calloc(b->requests, sizeof(*(b->measurements)));
