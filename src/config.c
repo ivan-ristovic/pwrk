@@ -46,8 +46,8 @@ static Batch* parse_batch(char *line, const char *delim)
     tok = strtok(NULL, delim);
     if (tok == NULL || *tok == '\0')
         return NULL;
-    uint64_t delay_us = atoll(tok);
-    if (delay_us == 0)
+    uint64_t delay_us = strtoull(tok, NULL, 10);
+    if (errno == EINVAL || errno == ERANGE)
         return NULL;
 
     // 4: request type
