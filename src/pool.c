@@ -16,7 +16,7 @@ static void process_batch(const char *base_url, Batch *batch)
     panic_if(url == NULL, "malloc() failed");
     memcpy(url, base_url, base_url_size);
     memcpy(url + base_url_size, batch->endpoint, endpoint_size);
-    url[base_url_size + endpoint_size + 1] = '\0';
+    url[base_url_size + endpoint_size] = '\0';
     dbg("URL: %s", url);
 
     // Run batch
